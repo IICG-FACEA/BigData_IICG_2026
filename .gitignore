@@ -1,0 +1,24 @@
+# --- Archivos de Jupyter y Python ---
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.env
+
+# --- Archivos de Sistema (Basura) ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Docker ---
+.docker/
+*.log
+
+# --- Datos y temporales ---
+*.csv
+*.json
+!work/**/data_limpia.json
