@@ -1,6 +1,7 @@
 services:
   # Entorno de trabajo con Python y Spark pre-instalado
   workspace:
+    build: .
     image: jupyter/pyspark-notebook:latest
     container_name: bigdata_workspace
     ports:
@@ -10,7 +11,7 @@ services:
       - .:/home/jovyan/work
     environment:
       - JUPYTER_TOKEN=
-      - JUPYTER_PASSWORD=""
+      - JUPYTER_PASSWORD="iicg2026"
       - JUPYTER_ALLOW_INSECURE_WRITES=true
 
   # Base de Datos NoSQL
