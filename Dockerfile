@@ -1,3 +1,4 @@
+
 # Imagen base: trae Jupyter + Python + PySpark ya configurado
 FROM jupyter/pyspark-notebook:latest
 
