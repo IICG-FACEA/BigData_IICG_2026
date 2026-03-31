@@ -1,5 +1,5 @@
 # --- Archivos de Jupyter y Python ---
-.ipynb_checkpoints/
+#.ipynb_checkpoints/
 __pycache__/
 *.pyc
 *.pyo
