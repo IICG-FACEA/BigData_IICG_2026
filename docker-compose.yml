@@ -1,11 +1,17 @@
 services:
   # Entorno de trabajo con Python y Spark pre-instalado
   workspace:
+<<<<<<< HEAD
+=======
+    #image: jupyter/pyspark-notebook:latest
+>>>>>>> 028e3b7a5ae5d666ed330ac8f30c6303f183c54f
     build: .
     container_name: bigdata_workspace
     ports:
       - "8888:8888" # Jupyter Lab
-      - "4040:4040" # Panel de control de Spark
+      - "4040:4040" # Panel de control de Spark      
+      - "5900:5900" #permiten acceder a la parte visual.
+      - "6080:6080" #permiten acceder a la parte visual.
     volumes:
       - .:/home/jovyan/work
     environment:
