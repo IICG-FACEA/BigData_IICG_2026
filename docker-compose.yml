@@ -31,7 +31,20 @@ services:
 
     volumes:
       - mongo_data:/data/db       # Guarda los datos de forma persistente
-
+      
+    # EL SERVICIO QUE FALTA PARA EL PUERTO 8081
+  admin-db:
+    image: mongo-express:latest
+    container_name: bigdata_ui
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      # Se conecta al servicio 'database' definido arriba
+      - ME_CONFIG_MONGODB_URL=mongodb://database:27017/
+    depends_on:
+      - database
+      
 # Volumen persistente para MongoDB
 volumes:
   mongo_data:
