@@ -1,11 +1,7 @@
 services:
   # Contenedor principal con Jupyter, Spark y entorno visual
   workspace:
-<<<<<<< HEAD
-    build: .
-=======
     build: .                      # Construye la imagen usando el Dockerfile local
->>>>>>> 9d6a958cdba292deaed0fcea5af46fe86568ab33
     container_name: bigdata_workspace
 
     ports:
