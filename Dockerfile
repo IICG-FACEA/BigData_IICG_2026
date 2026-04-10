@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-# Imagen base: trae Jupyter + Python + PySpark ya configurado
-=======
 # Imagen base con Jupyter + PySpark
->>>>>>> main
 FROM jupyter/pyspark-notebook:latest
 
 # Cambia al usuario administrador (root) para poder instalar programas
