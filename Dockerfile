@@ -1,6 +1,7 @@
 # Imagen base con Jupyter + PySpark
 FROM jupyter/pyspark-notebook:latest
 
+# Cambia al usuario root para instalar programas
 USER root
 
 # Instala entorno visual, supervisor y Chrome

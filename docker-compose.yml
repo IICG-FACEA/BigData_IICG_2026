@@ -1,7 +1,11 @@
 services:
   # Contenedor principal con Jupyter, Spark y entorno visual
   workspace:
+<<<<<<< HEAD
     build: .                      # Construye la imagen usando el Dockerfile local
+=======
+    build: .
+>>>>>>> feature/arielpeña
     container_name: bigdata_workspace
 
     ports:
