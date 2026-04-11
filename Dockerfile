@@ -5,29 +5,20 @@ FROM jupyter/pyspark-notebook:latest
 USER root
 
 # Instala entorno visual, supervisor y Chrome
+# Instalación de dependencias básicas
 RUN apt-get update && apt-get install -y \
-    wget \
-    curl \
-    gnupg \
-    ca-certificates \
-    xvfb \
-    fluxbox \
-    x11vnc \
-    supervisor \
-    python3-websockify \
-    novnc \
-    libnss3 \
-    libgbm1 \
-    libasound2 \
-    sed \
-    && mkdir -p /etc/apt/keyrings \
-    && wget -qO- https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /etc/apt/keyrings/google-chrome.gpg \
-    && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
+    wget curl gnupg ca-certificates python3-distutils \
+    xvfb fluxbox x11vnc supervisor novnc python3-websockify \
+    libnss3 libgbm1 libasound2 \
+    --no-install-recommends
+
+# Instalación de Google Chrome (Método moderno de llaves)
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor > /usr/share/keyrings/google-chrome.gpg \
+    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
     && apt-get update \
     && apt-get install -y google-chrome-stable \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-
 # Instala librerías Python para scraping y MongoDB
 RUN pip install selenium pymongo webdriver-manager pandas
 
