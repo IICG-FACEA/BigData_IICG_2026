@@ -16,6 +16,7 @@ services:
       - JUPYTER_TOKEN=""
       - JUPYTER_PASSWORD=""
       - JUPYTER_ALLOW_INSECURE_WRITES=true
+      
 
   # Base de Datos NoSQL
   database:

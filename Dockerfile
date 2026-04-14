@@ -1,10 +1,9 @@
 # Imagen base: trae Jupyter + Python + PySpark ya configurado
 FROM jupyter/pyspark-notebook:latest
 
-# Cambia al usuario administrador (root) para poder instalar programas
 USER root
 
-# 1. Actualiza repositorios e instala herramientas básicas, instala Google Chrome y librerías necesarias
+# 1. Actualiza repositorios e instala herramientas básicas
 RUN apt-get update && apt-get install -y \
     wget \
     curl \
@@ -21,9 +20,15 @@ RUN apt-get update && apt-get install -y \
     libasound2 && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 2. Instala librerías de Python necesarias
-RUN pip install selenium pymongo webdriver-manager
+# 2. Instala librerías de Python (INCLUYE PYSPARK EXPLÍCITAMENTE)
+RUN pip install --upgrade pip && \
+    pip install pyspark==3.4.0 selenium pymongo webdriver-manager
 
-# Vuelve al usuario normal de Jupyter (buena práctica de seguridad)
+# 3. Descarga el JAR de MongoDB Spark Connector
+RUN mkdir -p /opt/spark-jars && \
+    cd /opt/spark-jars && \
+    wget https://repo1.maven.org/maven2/org/mongodb/spark/mongo-spark-connector_2.12/10.1.1/mongo-spark-connector_2.12-10.1.1.jar
+
 USER jovyan
+
 CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root", "--ServerApp.token=''", "--ServerApp.password=''"]
