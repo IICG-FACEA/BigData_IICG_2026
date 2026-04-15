@@ -16,6 +16,9 @@ services:
       - JUPYTER_TOKEN=""
       - JUPYTER_PASSWORD=""
       - JUPYTER_ALLOW_INSECURE_WRITES=true
+      - DISPLAY=:99   
+
+    shm_size: "2gb" 
       
 
   # Base de Datos NoSQL
@@ -30,13 +33,15 @@ services:
   # Interfaz gráfica para la base de datos (Opcional, pero muy útil)
   mongo-express:
     image: mongo-express:latest
-    container_name: bigdata_mongo_express
+    container_name: bigdata_ui
     restart: always
     ports:
       - "8081:8081"
     environment:
       - ME_CONFIG_MONGODB_SERVER=database
       - ME_CONFIG_MONGODB_PORT=27017
+    depends_on:
+      - database
 
 volumes:
   mongo_data:
