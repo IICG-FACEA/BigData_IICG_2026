@@ -1,64 +1,56 @@
 services:
   # Contenedor principal con Jupyter, Spark y entorno visual
   workspace:
-<<<<<<< HEAD
-    build: .                      # Construye la imagen usando el Dockerfile local
-    container_name: bigdata_workspace
-=======
     build: .
     container_name: bigdata_workspace
+    platform: linux/amd64
+
     ports:
-      - "8888:8888" # Jupyter Lab
-      - "4040:4040" # Panel de control de Spark
+      - "8888:8888"
+      - "4040:4040"
+      - "5900:5900"
+      - "6080:6080"
+
     volumes:
       - .:/home/jovyan/work
+
     environment:
       - JUPYTER_TOKEN=
-      - JUPYTER_PASSWORD="iicg2026"
+      - JUPYTER_PASSWORD=
       - JUPYTER_ALLOW_INSECURE_WRITES=true
->>>>>>> 7748823042850bea947ec664e3aef42e5c4578d7
+      - DISPLAY=:99
 
-    ports:
-      - "8888:8888"               # Jupyter Lab
-      - "4040:4040"               # Interfaz web de Spark
-      - "5900:5900"               # Acceso VNC al escritorio
-      - "6080:6080"               # Acceso noVNC desde navegador
+    shm_size: "2gb"
 
-    volumes:
-      - .:/home/jovyan/work       # Monta la carpeta del proyecto dentro del contenedor
-
-    environment:
-      - JUPYTER_TOKEN=            # Desactiva token de acceso
-      - JUPYTER_PASSWORD=         # Desactiva contraseña
-      - JUPYTER_ALLOW_INSECURE_WRITES=true  # Permite escritura en volúmenes montados
-      - DISPLAY=:99               # Pantalla virtual usada por el entorno gráfico
-
-    shm_size: "2gb"               # Evita fallos del navegador por poca memoria compartida
+    depends_on:
+      - database
 
   # Contenedor de base de datos MongoDB
   database:
     image: mongo:latest
     container_name: bigdata_mongodb
+    platform: linux/amd64
 
     ports:
-      - "27017:27017"             # Puerto de MongoDB
+      - "27017:27017"
 
     volumes:
-      - mongo_data:/data/db       # Guarda los datos de forma persistente
-      
-    # EL SERVICIO QUE FALTA PARA EL PUERTO 8081
+      - mongo_data:/data/db
+
+  # Interfaz web Mongo Express
   admin-db:
     image: mongo-express:latest
     container_name: bigdata_ui
     restart: always
+
     ports:
       - "8081:8081"
+
     environment:
-      # Se conecta al servicio 'database' definido arriba
       - ME_CONFIG_MONGODB_URL=mongodb://database:27017/
+
     depends_on:
       - database
-      
-# Volumen persistente para MongoDB
+
 volumes:
   mongo_data:
