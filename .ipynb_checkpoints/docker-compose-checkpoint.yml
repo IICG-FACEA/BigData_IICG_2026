@@ -23,7 +23,7 @@ services:
     shm_size: "2gb"               # Evita fallos del navegador por poca memoria compartida
 
     depends_on:
-      - database
+      - mongodb
       
   # Contenedor de base de datos MongoDB
   database:
