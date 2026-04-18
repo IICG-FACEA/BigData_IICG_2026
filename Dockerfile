@@ -59,5 +59,8 @@ RUN sed -i 's/\r$//' /usr/local/bin/start-vnc.sh && chmod +x /usr/local/bin/star
 EXPOSE 8888 5900 6080 4040
 
 # Inicia supervisord
+<<<<<<< HEAD
 # Iniciamos como root para evitar el error de setuid de la sesión anterior
+=======
+>>>>>>> 67b477c (Resolviendo cambios en Dockerfile y carpetas)
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
