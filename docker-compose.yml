@@ -6,10 +6,10 @@ services:
     platform: linux/amd64
 
     ports:
-      - "8888:8888"
-      - "4040:4040"
-      - "5900:5900"
-      - "6080:6080"
+      - "8888:8888"   # Jupyter Lab
+      - "4040:4040"   # Spark UI
+      - "5900:5900"   # VNC
+      - "6080:6080"   # noVNC
 
     volumes:
       - .:/home/jovyan/work
