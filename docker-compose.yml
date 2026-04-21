@@ -5,6 +5,7 @@ services:
   workspace:
     build: .                      # Construye la imagen usando el Dockerfile local
     container_name: bigdata_workspace
+    platform: linux/amd64
 
     ports:
       - "8888:8888"               # Jupyter Lab
@@ -23,18 +24,21 @@ services:
 
     shm_size: "2gb"               # Evita fallos del navegador por poca memoria compartida
 
+    depends_on:
+      - database
+      
   # Contenedor de base de datos MongoDB
   database:
     image: mongo:latest
     container_name: bigdata_mongodb
-
+    platform: linux/amd64
     ports:
       - "27017:27017"             # Puerto de MongoDB
 
     volumes:
       - mongo_data:/data/db       # Guarda los datos de forma persistente
-
-  # Interfaz web para administrar MongoDB
+      
+  # Interfaz web para visualizar la base de datos en puerto 8081
   admin-db:
     image: mongo-express:latest
     container_name: bigdata_ui
