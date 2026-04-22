@@ -42,7 +42,7 @@ services:
       - "8081:8081"
     environment:
       # Se conecta al servicio 'database' definido arriba
-      - ME_CONFIG_MONGODB_URL=mongodb://database:27017/
+      - mongodb+srv://valentinaarostica_db_user:ZMddicQkrxsYv5IT@cluster0.gxkvvjs.mongodb.net/BigData_ECommerce?appName=Cluster0
     depends_on:
       - database
       
