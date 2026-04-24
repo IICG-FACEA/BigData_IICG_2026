@@ -1,7 +1,6 @@
 # Imagen base con Jupyter + PySpark
 FROM jupyter/pyspark-notebook:latest
 
-# Cambia al usuario root para instalar programas
 USER root
 
 # Instala entorno visual, supervisor y Chrome
@@ -28,6 +27,17 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Instalar dependencias necesarias
+RUN apt-get update && apt-get install -y curl unzip
+
+# Descargar e instalar Chromedriver (versión alineada con Chrome 147.0.7727.116)
+RUN curl -LO https://storage.googleapis.com/chrome-for-testing/147.0.7727.116/linux64/chromedriver-linux64.zip \
+    && unzip chromedriver-linux64.zip \
+    && mv chromedriver-linux64/chromedriver /usr/bin/chromedriver \
+    && chmod +x /usr/bin/chromedriver \
+    && rm -rf chromedriver-linux64 chromedriver-linux64.zip
+
+
 # Instala librerías Python para scraping y MongoDB
 RUN pip install selenium pymongo webdriver-manager pandas
 
@@ -46,6 +56,6 @@ RUN sed -i 's/\r$//' /usr/local/bin/start-vnc.sh && chmod +x /usr/local/bin/star
 
 # Puertos del contenedor
 EXPOSE 8888 5900 6080 4040
+
 # Inicia supervisord
-# Iniciamos como root para evitar el error de setuid de la sesión anterior
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
