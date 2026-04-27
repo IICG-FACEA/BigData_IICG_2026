@@ -2,13 +2,15 @@
 
 **Curso:** Big Data para la toma de decisiones — Universidad Católica del Norte  
 **Grupo:** E-Commerce & Precios  
-**Responsables:** 
+**Objetivo Estratégico:** Monitoreo de inflación y competencia en e-commerce chileno  
+**Responsables:**
 - Valentina Aróstica
 - Mayra Gutierrez
 - Luis Molina
 - Kimberly Neira
 - Alondra Segovia
 - Ariel Peña  
+
 **Fuente de datos:** MercadoLibre Chile (https://www.mercadolibre.cl)
 
 ---
@@ -54,6 +56,16 @@ docker-compose up -d
 ```
 
 Navegar a `work/Proyecto_MercadoLibre/notebooks/` y abrir el notebook correspondiente.
+
+**Servicios disponibles:**
+
+| Servicio | URL |
+|---------|-----|
+| Jupyter Lab | http://localhost:8888 |
+| MongoDB local | mongodb://localhost:27017 |
+| Mongo Express (UI) | http://localhost:8081 |
+| Spark UI | http://localhost:4040 |
+| Escritorio visual | http://localhost:6080 |
 
 ### Opción B — Local (sin Docker)
 
@@ -167,6 +179,25 @@ Página n: <BASE_URL>_Desde_{(n-1)*48 + 1}
 
 ## Hito 1 — Infraestructura y Captura de Datos
 
+### Business Case
+
+**1. Situación Problema**  
+Los retailers y consumidores toman decisiones de compra y fijación de precios sin visibilidad en tiempo real del mercado. Las variaciones de precio en categorías tecnológicas (smartphones, laptops, TVs) ocurren diariamente, pero no existe un sistema automatizado que registre y analice esos cambios de forma histórica.
+
+**2. Propuesta de Valor**  
+Mediante scraping automatizado de MercadoLibre, capturamos precios, descuentos y atributos de producto en múltiples categorías. Esto permite detectar tendencias de inflación por categoría, identificar patrones de descuento, y comparar competitividad entre marcas con datos reales y actualizados.
+
+**3. Análisis de las 4V**
+
+| V | Justificación |
+|---|--------------|
+| **Volumen** | Se requieren >3.000 registros (500 por integrante) para obtener representatividad estadística por categoría y detectar variaciones de precio con significancia. |
+| **Variedad** | Cada documento captura 14 atributos distintos: precio actual, precio original, descuento, marca, título, URL, imagen, página, fecha, grupo, responsable, categoría, producto_id y tiene_descuento. |
+| **Veracidad** | Los datos se limpian eliminando valores nulos en precios, descartando registros sin título, y validando que los precios sean numéricos (int/float). El upsert evita duplicados. |
+| **Velocidad** | En retail de tecnología los precios cambian diariamente. El scraper debe ejecutarse al menos cada 24 horas para que el análisis no quede obsoleto. |
+
+---
+
 ### Comando de ejecución
 
 ```bash
@@ -185,7 +216,7 @@ Esto levanta tres contenedores:
 
 Captura de pantalla del comando `docker stats` mostrando el consumo de recursos de los contenedores activos.
 > **Comando:** `docker stats`
-![alt text](<outputs/Evidencia Docker Stats.png>)
+![Evidencia Docker Stats](<outputs/Evidencia Docker Stats.png>)
 
 ---
 
@@ -199,12 +230,11 @@ Captura desde MongoDB Compass o terminal mostrando el total de documentos en la 
 > db.smartphones_mercadolibre.countDocuments()
 > ```
 
-
 ---
 
 ### Tabla de Atributos por Integrante
 
-Todos los scrapers comparten el mismo esquema de 12 campos:
+Todos los scrapers comparten el mismo esquema de 14 campos:
 
 | Campo | Tipo | Descripción | Integrante |
 |-------|------|-------------|------------|
