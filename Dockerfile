@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     gnupg \
     ca-certificates \
+    openssl \
     xvfb \
     fluxbox \
     x11vnc \
@@ -27,12 +28,25 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Instala librerías Python para scraping y MongoDB
-RUN pip install selenium pymongo webdriver-manager pandas
+# Limpia JARs viejos de MongoDB para evitar conflictos de versión
+RUN rm -f /usr/local/spark/jars/mongo-spark-connector* && \
+    rm -f /usr/local/spark/jars/mongodb-driver* && \
+    rm -f /usr/local/spark/jars/bson*
+
+# Instala JARs de MongoDB Spark Connector 10.3.0 (compatible con Spark 3.5)
+RUN wget https://repo1.maven.org/maven2/org/mongodb/spark/mongo-spark-connector_2.12/10.3.0/mongo-spark-connector_2.12-10.3.0.jar -P /usr/local/spark/jars/ && \
+    wget https://repo1.maven.org/maven2/org/mongodb/mongodb-driver-sync/4.11.1/mongodb-driver-sync-4.11.1.jar -P /usr/local/spark/jars/ && \
+    wget https://repo1.maven.org/maven2/org/mongodb/mongodb-driver-core/4.11.1/mongodb-driver-core-4.11.1.jar -P /usr/local/spark/jars/ && \
+    wget https://repo1.maven.org/maven2/org/mongodb/bson/4.11.1/bson-4.11.1.jar -P /usr/local/spark/jars/ && \
+    wget https://repo1.maven.org/maven2/org/mongodb/bson-record-codec/4.11.1/bson-record-codec-4.11.1.jar -P /usr/local/spark/jars/
+
+# Instala librerías Python base (scraping adicional se instala en cada notebook)
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir "pymongo[srv]" dnspython selenium webdriver-manager pandas certifi
 
 # Variables del entorno gráfico
 ENV DISPLAY=:99
-ENV SCREEN_WIDTH=1366
+ENV SCREEN_WIDTH=1368
 ENV SCREEN_HEIGHT=768
 ENV SCREEN_DEPTH=24
 

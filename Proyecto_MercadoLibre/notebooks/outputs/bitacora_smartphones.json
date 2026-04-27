@@ -1,0 +1,12 @@
+{
+  "grupo": "E-Commerce",
+  "responsable": "Valentina",
+  "categoria": "smartphones",
+  "fecha_scraping": "2026-04-26T17:42:33.479210",
+  "paginas_scrapeadas": 20,
+  "productos_validos": 900,
+  "con_descuento": 560,
+  "precio_promedio_clp": 172478.0,
+  "descuento_prom_pct": 36.7,
+  "csv_generado": "smartphones_ml_20260426_174742.csv"
+}

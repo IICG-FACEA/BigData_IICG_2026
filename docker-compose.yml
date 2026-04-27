@@ -3,6 +3,7 @@ services:
   workspace:
     build: .                      # Construye la imagen usando el Dockerfile local
     container_name: bigdata_workspace
+    platform: linux/amd64
 
     ports:
       - "8888:8888"               # Jupyter Lab
@@ -18,34 +19,91 @@ services:
       - JUPYTER_PASSWORD=         # Desactiva contraseña
       - JUPYTER_ALLOW_INSECURE_WRITES=true  # Permite escritura en volúmenes montados
       - DISPLAY=:99               # Pantalla virtual usada por el entorno gráfico
+      - JUPYTER_ENABLE_LAB=yes
       - PYSPARK_SUBMIT_ARGS=--packages org.mongodb.spark:mongo-spark-connector_2.12:10.4.0 pyspark-shell
+      - ATLAS_URI=mongodb+srv://valentinaarostica_db_user:ecommerce@cluster0.gxkvvjs.mongodb.net/BigData_ECommerce?appName=Cluster0
+      - MONGO_LOCAL_URI=mongodb://database:27017/
 
     shm_size: "2gb"               # Evita fallos del navegador por poca memoria compartida
 
-  # Contenedor de base de datos MongoDB
+    depends_on:
+      - database
+      - admin-db
+      - admin-db-atlas
+
+    dns:
+      - 8.8.8.8
+
+    restart: always
+
+    networks:
+      - bigdata_net
+
+  # Contenedor de base de datos MongoDB LOCAL
   database:
     image: mongo:latest
     container_name: bigdata_mongodb
+    platform: linux/amd64
 
     ports:
-      - "27017:27017"             # Puerto de MongoDB
+      - "27017:27017"             # Puerto de MongoDB local
 
     volumes:
       - mongo_data:/data/db       # Guarda los datos de forma persistente
-      
-    # EL SERVICIO QUE FALTA PARA EL PUERTO 8081
+
+    restart: always
+
+    networks:
+      - bigdata_net
+
+  # Interfaz web para visualizar la base de datos LOCAL en puerto 8081
   admin-db:
     image: mongo-express:latest
-    container_name: bigdata_ui
+    container_name: bigdata_ui_local
     restart: always
     ports:
       - "8081:8081"
     environment:
-      # Se conecta al servicio 'database' definido arriba
-      - mongodb+srv://valentinaarostica_db_user:ZMddicQkrxsYv5IT@cluster0.gxkvvjs.mongodb.net/BigData_ECommerce?appName=Cluster0
+      - ME_CONFIG_MONGODB_URL=mongodb://database:27017/
+      - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
     depends_on:
       - database
-      
-# Volumen persistente para MongoDB
+    networks:
+      - bigdata_net
+
+  # Interfaz web para visualizar MongoDB Atlas en puerto 8082
+  admin-db-atlas:
+    image: mongo-express:latest
+    container_name: bigdata_ui_atlas
+    restart: always
+    ports:
+      - "8082:8081"
+    environment:
+      - ME_CONFIG_MONGODB_URL=mongodb+srv://valentinaarostica_db_user:ecommerce@cluster0.gxkvvjs.mongodb.net/BigData_ECommerce?appName=Cluster0
+      - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
+    dns:
+      - 8.8.8.8
+    networks:
+      - bigdata_net
+
+  # Explorador de archivos del proyecto desde el navegador en puerto 8083
+  filebrowser:
+    image: filebrowser/filebrowser
+    container_name: bigdata_filebrowser
+    restart: always
+    ports:
+      - "8083:80"
+    volumes:
+      - .:/srv
+    networks:
+      - bigdata_net
+
+# Volumen persistente para MongoDB LOCAL
 volumes:
   mongo_data:
+
+# Red personalizada para que todos los servicios se comuniquen de forma ordenada
+networks:
+  bigdata_net:
+    driver: bridge
+    name: BigData_Network_UCN
