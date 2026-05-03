@@ -1,3 +1,11 @@
+# Archivos de ejercicios semanales (van solo en las ramas personales)
+books_toscrape/
+Reset/
+Semana*/
+"Podcast*"
+codigo_prueba.ipynb
+README_respaldo_*.md
+
 # Archivos de debug
 outputs/debug_*.html
 notebooks/outputs/debug_*.html
