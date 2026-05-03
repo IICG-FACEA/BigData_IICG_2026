@@ -1,7 +1,3 @@
-# Datos generados por el scraper (ya están en MongoDB Atlas)
-outputs/*.csv
-notebooks/outputs/*.csv
-
 # Archivos de debug
 outputs/debug_*.html
 notebooks/outputs/debug_*.html
