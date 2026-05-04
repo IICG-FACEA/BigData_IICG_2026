@@ -18,6 +18,14 @@
 
 ---
 
+## Pregunta de Investigación
+
+> **¿Los descuentos publicados en MercadoLibre Chile son reales o artificiales, qué categoría ofrece la mejor relación precio-descuento para el consumidor, y qué marcas dominan cada segmento de precio?**
+
+Esta pregunta será respondida mediante el análisis de 5,343 productos capturados en 6 categorías de electrónica, procesados con Apache Spark sobre datos extraídos directamente de MercadoLibre Chile.
+
+---
+
 ## Hito 1: Infraestructura y Captura de Datos
 
 ### Comando de ejecución
