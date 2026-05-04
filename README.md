@@ -7,14 +7,14 @@
 
 | Integrante | Categoría | Colección Atlas | Documentos |
 |---|---|---|---|
-| Valentina Aróstica | Smartphones | `smartphones_mercadolibre` | 621 |
-| Alondra Segovia | Televisores | `televisores_mercadolibre` | 540 |
-| Luis Molina | Laptops | `laptops_mercadolibre` | — |
-| Kimberly Neira | Tablets | `tablets_mercadolibre` | 572 |
-| Ariel Peña | Auriculares | `auriculares_mercadolibre` | 567 |
-| Mayra Gutierrez | Hornos | `hornos_mercadolibre` | 510 |
+| Valentina Aróstica | Smartphones | `smartphones_mercadolibre` | 880 |
+| Alondra Segovia | Televisores | `televisores_mercadolibre` | 1,180 |
+| Luis Molina | Laptops | `laptops_mercadolibre` | 972 |
+| Kimberly Neira | Tablets | `tablets_mercadolibre` | 980 |
+| Ariel Peña | Auriculares | `auriculares_mercadolibre` | 784 |
+| Mayra Gutierrez | Hornos | `hornos_mercadolibre` | 547 |
 
-**Total acumulado:** 2,810+ documentos en MongoDB Atlas (`BigData_ECommerce`)
+**Total acumulado:** 5,343 documentos en MongoDB Atlas (`BigData_ECommerce`)
 
 ---
 
@@ -53,11 +53,13 @@ Servicios que se levantan:
 ```js
 // Comando ejecutado en MongoDB Compass (Shell)
 use BigData_ECommerce
-db.smartphones_mercadolibre.countDocuments()   // 621
-db.televisores_mercadolibre.countDocuments()   // 540
-db.tablets_mercadolibre.countDocuments()       // 572
-db.auriculares_mercadolibre.countDocuments()   // 567
-db.hornos_mercadolibre.countDocuments()        // 510
+db.productos_consolidados.countDocuments()     // 5343
+db.smartphones_mercadolibre.countDocuments()   // 880
+db.televisores_mercadolibre.countDocuments()   // 1180
+db.laptops_mercadolibre.countDocuments()       // 972
+db.tablets_mercadolibre.countDocuments()       // 980
+db.auriculares_mercadolibre.countDocuments()   // 784
+db.hornos_mercadolibre.countDocuments()        // 547
 ```
 
 ![mongodb_count](assets/evidencia_mongodb_count.png)
