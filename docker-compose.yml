@@ -19,14 +19,10 @@ services:
       - JUPYTER_PASSWORD=         # Desactiva contraseña
       - JUPYTER_ALLOW_INSECURE_WRITES=true  # Permite escritura en volúmenes montados
       - DISPLAY=:99               # Pantalla virtual usada por el entorno gráfico
-<<<<<<< HEAD
-      - PYSPARK_SUBMIT_ARGS=--packages org.mongodb.spark:mongo-spark-connector_2.12:10.4.0 pyspark-shell
-=======
       - JUPYTER_ENABLE_LAB=yes
       - PYSPARK_SUBMIT_ARGS=--packages org.mongodb.spark:mongo-spark-connector_2.12:10.4.0 pyspark-shell
       - ATLAS_URI=mongodb+srv://valentinaarostica_db_user:ecommerce@cluster0.gxkvvjs.mongodb.net/BigData_ECommerce?appName=Cluster0
       - MONGO_LOCAL_URI=mongodb://database:27017/
->>>>>>> origin/main
 
     shm_size: "2gb"               # Evita fallos del navegador por poca memoria compartida
 
@@ -68,13 +64,8 @@ services:
     ports:
       - "8081:8081"
     environment:
-<<<<<<< HEAD
-      # Se conecta al servicio 'database' definido arriba
-      - mongodb+srv://valentinaarostica_db_user:ZMddicQkrxsYv5IT@cluster0.gxkvvjs.mongodb.net/BigData_ECommerce?appName=Cluster0
-=======
       - ME_CONFIG_MONGODB_URL=mongodb://database:27017/
       - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
->>>>>>> origin/main
     depends_on:
       - database
     networks:
@@ -109,9 +100,6 @@ services:
 
 # Volumen persistente para MongoDB LOCAL
 volumes:
-<<<<<<< HEAD
-  mongo_data:
-=======
   mongo_data:
 
 # Red personalizada para que todos los servicios se comuniquen de forma ordenada
@@ -119,4 +107,3 @@ networks:
   bigdata_net:
     driver: bridge
     name: BigData_Network_UCN
->>>>>>> origin/main
