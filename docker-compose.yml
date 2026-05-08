@@ -1,15 +1,14 @@
 services:
-  # Contenedor principal con Jupyter, Spark y entorno visual
   workspace:
     build: .
     container_name: bigdata_workspace
     platform: linux/amd64
 
     ports:
-      - "8888:8888"   # Jupyter Lab
-      - "4040:4040"   # Spark UI
-      - "5900:5900"   # VNC
-      - "6080:6080"   # noVNC
+      - "8888:8888"
+      - "4040:4040"
+      - "5900:5900"
+      - "6080:6080"
 
     volumes:
       - .:/home/jovyan/work
@@ -19,13 +18,23 @@ services:
       - JUPYTER_PASSWORD=
       - JUPYTER_ALLOW_INSECURE_WRITES=true
       - DISPLAY=:99
+      - JUPYTER_ENABLE_LAB=yes
 
     shm_size: "2gb"
 
     depends_on:
       - database
+      - admin-db
+      - admin-db-atlas
 
-  # Contenedor de base de datos MongoDB
+    dns:
+      - 8.8.8.8
+
+    restart: always
+
+    networks:
+      - bigdata_net
+
   database:
     image: mongo:latest
     container_name: bigdata_mongodb
@@ -37,10 +46,14 @@ services:
     volumes:
       - mongo_data:/data/db
 
-  # Interfaz web Mongo Express
+    restart: always
+
+    networks:
+      - bigdata_net
+
   admin-db:
     image: mongo-express:latest
-    container_name: bigdata_ui
+    container_name: bigdata_ui_local
     restart: always
 
     ports:
@@ -48,9 +61,50 @@ services:
 
     environment:
       - ME_CONFIG_MONGODB_URL=mongodb://database:27017/
+      - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
 
     depends_on:
       - database
 
+    networks:
+      - bigdata_net
+
+  admin-db-atlas:
+    image: mongo-express:latest
+    container_name: bigdata_ui_atlas
+    restart: always
+
+    ports:
+      - "8082:8081"
+
+    environment:
+      - ME_CONFIG_MONGODB_URL=mongodb+srv://yhadfeg_db_user:3192Yahima@cluster0.8pbh7yw.mongodb.net/?retryWrites=true&w=majority
+      - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
+
+    dns:
+      - 8.8.8.8
+
+    networks:
+      - bigdata_net
+
+  filebrowser:
+    image: filebrowser/filebrowser
+    container_name: bigdata_filebrowser
+    restart: always
+
+    ports:
+      - "8083:80"
+
+    volumes:
+      - .:/srv
+
+    networks:
+      - bigdata_net
+
 volumes:
   mongo_data:
+
+networks:
+  bigdata_net:
+    driver: bridge
+    name: BigData_Network_UCN

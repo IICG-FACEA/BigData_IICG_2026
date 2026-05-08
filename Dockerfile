@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     gnupg \
     ca-certificates \
+    openssl \
     xvfb \
     fluxbox \
     x11vnc \
@@ -41,7 +42,8 @@ RUN wget https://repo1.maven.org/maven2/org/mongodb/spark/mongo-spark-connector_
     wget https://repo1.maven.org/maven2/org/mongodb/bson-record-codec/4.11.1/bson-record-codec-4.11.1.jar -P /usr/local/spark/jars/
 
 # Librerías Python
-RUN pip install selenium pymongo webdriver-manager pandas
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir "pymongo[srv]" dnspython selenium webdriver-manager pandas certifi
 
 # Variables entorno gráfico
 ENV DISPLAY=:99
