@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     gnupg \
     ca-certificates \
+    openssl \
     xvfb \
     fluxbox \
     x11vnc \
@@ -37,12 +38,23 @@ RUN rm -f /usr/local/spark/jars/mongo-spark-connector* && \
     wget https://repo1.maven.org/maven2/org/mongodb/spark/mongo-spark-connector_2.12/10.3.0/mongo-spark-connector_2.12-10.3.0.jar -P /usr/local/spark/jars/ && \
     wget https://repo1.maven.org/maven2/org/mongodb/mongodb-driver-sync/4.11.1/mongodb-driver-sync-4.11.1.jar -P /usr/local/spark/jars/ && \
     wget https://repo1.maven.org/maven2/org/mongodb/mongodb-driver-core/4.11.1/mongodb-driver-core-4.11.1.jar -P /usr/local/spark/jars/ && \
+<<<<<<< HEAD
     wget https://repo1.maven.org/maven2/org/mongodb/bson/4.11.1/bson-4.11.1.jar -P /usr/local/spark/jars/
 
 # 4. Instala noVNC desde GitHub y websockify
 RUN git clone https://github.com/novnc/noVNC.git /opt/noVNC \
     && git clone https://github.com/novnc/websockify /opt/noVNC/utils/websockify \
     && ln -s /opt/noVNC/vnc.html /opt/noVNC/index.html
+=======
+    wget https://repo1.maven.org/maven2/org/mongodb/bson/4.11.1/bson-4.11.1.jar -P /usr/local/spark/jars/ && \
+    wget https://repo1.maven.org/maven2/org/mongodb/bson-record-codec/4.11.1/bson-record-codec-4.11.1.jar -P /usr/local/spark/jars/
+
+# 3. Librer�as de Python para todo el curso (Scraping + Atlas + Spark)
+RUN pip install --no-cache-dir --upgrade pip && \
+    #pip install --no-cache-dir "pymongo[srv]" dnspython certifi selenium webdriver-manager pandas
+    pip install --no-cache-dir "pymongo[srv]" dnspython selenium webdriver-manager pandas certifi
+
+>>>>>>> origin/main
 
     
 
