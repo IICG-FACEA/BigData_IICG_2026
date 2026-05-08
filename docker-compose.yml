@@ -1,12 +1,8 @@
+version: "3.8"
+
 services:
   # Contenedor principal con Jupyter, Spark y entorno visual
   workspace:
-<<<<<<< HEAD
-=======
-   HEAD
-    build: .
-
->>>>>>> 719b071 (Guardo cambios locales antes de rebase)
     build: .                      # Construye la imagen usando el Dockerfile local
     container_name: bigdata_workspace
     platform: linux/amd64
@@ -23,25 +19,28 @@ services:
     environment:
       - JUPYTER_TOKEN=            # Desactiva token de acceso
       - JUPYTER_PASSWORD=         # Desactiva contraseña
-      - JUPYTER_ALLOW_INSECURE_WRITES=true  # Permite escritura en volúmenes montados
-      - DISPLAY=:99               # Pantalla virtual usada por el entorno gráfico
+      - JUPYTER_ALLOW_INSECURE_WRITES=true
+      - DISPLAY=:0                # Debe coincidir con Xvfb :0
 
     shm_size: "2gb"               # Evita fallos del navegador por poca memoria compartida
 
     depends_on:
       - database
-      
+
+    # Ahora usamos un script externo para arrancar todo ordenado
+    command: ["/bin/bash", "/home/jovyan/work/start.sh"]
+
   # Contenedor de base de datos MongoDB
   database:
     image: mongo:latest
     container_name: bigdata_mongodb
     platform: linux/amd64
     ports:
-      - "27017:27017"             # Puerto de MongoDB
+      - "27017:27017"
 
     volumes:
-      - mongo_data:/data/db       # Guarda los datos de forma persistente
-      
+      - mongo_data:/data/db
+
   # Interfaz web para visualizar la base de datos en puerto 8081
   admin-db:
     image: mongo-express:latest
@@ -50,11 +49,10 @@ services:
     ports:
       - "8081:8081"
     environment:
-      # Se conecta al servicio 'database' definido arriba
       - ME_CONFIG_MONGODB_URL=mongodb://database:27017/
     depends_on:
       - database
-      
+
 # Volumen persistente para MongoDB
 volumes:
   mongo_data:
