@@ -102,7 +102,7 @@ services:
     environment:
       # --- IMPORTANTE ---
       # Reemplaza usuario, password y cluster por tus datos reales de Atlas
-      - ME_CONFIG_MONGODB_URL=mongodb+srv://yhadfeg_db_user:3192Yahima@cluster0.8pbh7yw.mongodb.net/?retryWrites=true&w=majority
+      - ME_CONFIG_MONGODB_URL=mongodb+srv://sebastianacevedo01_db_user:hEJN63Km2LGE8Ymi@cluster0.yoaogwo.mongodb.net/Bigdata_grupo4?appName=Cluster0
 
       # --- AGREGADO ---
       # Habilita funciones administrativas en mongo-express
