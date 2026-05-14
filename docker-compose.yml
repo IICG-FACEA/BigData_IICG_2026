@@ -64,15 +64,8 @@ services:
 
     volumes:
       - mongo_data:/data/db       # Guarda los datos de forma persistente
-
-    # --- AGREGADO ---
-    restart: always
-
-    # --- AGREGADO ---
-    networks:
-      - bigdata_net
-
-  # Interfaz web para visualizar la base de datos LOCAL en puerto 8081
+      
+  # Interfaz web para visualizar la base de datos en puerto 8081
   admin-db:
     image: mongo-express:latest
     container_name: bigdata_ui_local

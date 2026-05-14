@@ -1,4 +1,32 @@
 services:
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+  # Entorno de trabajo con Python y Spark pre-instalado
+  workspace:
+    image: jupyter/pyspark-notebook:latest
+    container_name: bigdata_workspace
+    ports:
+      - "8888:8888" # Jupyter Lab
+      - "4040:4040" # Panel de control de Spark
+    volumes:
+      - .:/home/jovyan/work
+    environment:
+      - JUPYTER_TOKEN=
+      - JUPYTER_PASSWORD=""
+      - JUPYTER_ALLOW_INSECURE_WRITES=true
+
+  # Base de Datos NoSQL
+  database:
+    image: mongo:latest
+    container_name: bigdata_mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+=======
+>>>>>>> 46082b8dd3e359d01c65c4feaa724a5d89ed0e74
   # Contenedor principal con Jupyter, Spark y entorno visual
   workspace:
     build: .                      # Construye la imagen usando el Dockerfile local
@@ -50,5 +78,9 @@ services:
       - database
       
 # Volumen persistente para MongoDB
+<<<<<<< HEAD
+=======
+>>>>>>> origin
+>>>>>>> 46082b8dd3e359d01c65c4feaa724a5d89ed0e74
 volumes:
   mongo_data:
