@@ -1,4 +1,4 @@
-# Contenido de scrapers/scraper_RodOrt.py
+# Contenido de scrapers/scraper_nicolas.py
  import os
  from selenium import webdriver
  # ... (todos los imports que ya tienes)
@@ -12,7 +12,7 @@
          datos_finales.append({
               "identificador": nombre,
               "valor": precio,
-              "grupo": "FyM_Team" # Su identificador
+              "grupo": "FyMnicolas_Team" # Su identificador
         })
 
      return datos_finales
