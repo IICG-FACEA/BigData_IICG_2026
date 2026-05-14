@@ -1,8 +1,8 @@
 from pyspark.sql import SparkSession
-from scrapers import scraper_soto, scraper_perez
+from scrapers import scraper_RodOrt, scraper_perez
 
 # 1. Recolectamos listas de Python de todos los estudiantes
-data_RodOrt = scraper_soto.ejecutar_extraccion()
+data_RodOrt = scraper_RodOrt.ejecutar_extraccion()
 data_perez = scraper_perez.ejecutar_extraccion()
 
 # 2. Iniciamos Spark
@@ -12,10 +12,10 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 # 3. Spark convierte las listas en un solo DataFrame unificado
- df_soto = spark.createDataFrame(data_soto)
+ df_RodOrt = spark.createDataFrame(data_RodOrt)
  df_perez = spark.createDataFrame(data_perez)
 
- df_final = df_soto.union(df_perez)
+ df_final = df_RodOrt.union(df_perez)
 
 # 4. ACCION DE SPARK: Limpieza y Transformacion
  # Por ejemplo: Quitar s mbolos de moneda y convertir a numero enmilisegundos
