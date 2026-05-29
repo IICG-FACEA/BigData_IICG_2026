@@ -10,21 +10,29 @@
 
 # Paso 1.1: Importar librerías necesarias
 
+# Imports Estandar Python 
+import os
+import re
+import time
+# Librerias Externas
 import requests
+import pandas as pd
+# Imports Específicos
 from bs4 import BeautifulSoup
 from pymongo import MongoClient
 from dotenv import load_dotenv
 from datetime import datetime
 from IPython.display import display
-import os
+# Selenium
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
+# Webdriver
 from webdriver_manager.chrome import ChromeDriverManager
-import re
-import time
-import pandas as pd
+# PySpark
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, regexp_replace, regexp_extract, when, lit, round
 
 
 # Paso 1.2: Cargar variables de entorno desde el archivo .env
@@ -162,7 +170,7 @@ def resolver_bloqueo_manual(url):
 
 # Paso 2.5: Extraer información de productos
 
-def extraer_productos(html, url):
+def extraer_productos(html, url, pagina):
     """
     Extrae información de productos desde el HTML.
 
@@ -273,7 +281,7 @@ def extraer_productos(html, url):
         # SKU interno académico
         # ==================================================
 
-        sku_id = f"TD_{i:05d}"
+        sku_id = f"TD_P{pagina:04d}_{i:05d}"
 
         # ==================================================
         # Documento JSON Raw
@@ -375,9 +383,12 @@ def main():
 
     todos_los_productos = []
 
-    pagina = 1
+    pagina_inicio = 61
+    pagina_fin = 80
+    
+    pagina = pagina_inicio
 
-    while True:
+    while pagina <= pagina_fin:
 
         print(f"\nProcesando página {pagina}")
 
@@ -396,7 +407,7 @@ def main():
         if bloqueo:
             html = resolver_bloqueo_manual(url_pagina)
 
-        productos = extraer_productos(html, url_pagina)
+        productos = extraer_productos(html, url_pagina, pagina)
 
         # Si no hay productos termina el loop
         if len(productos) == 0:
@@ -424,5 +435,293 @@ if __name__ == "__main__":
     main()
 
 # ============================================================
-# ETAPA 5: EDA + Spark + integración MongoDB–Spark
+# ETAPA 5: LIMPIEZA, NORMALIZACIÓN Y EDA CON SPARK
+#   MongoDB Atlas
+#       ↓
+#    Spark
+#       ↓
+#   Limpieza de datos
+#       ↓
+#   Normalización de precio y peso
+#       ↓
+#   Cálculo de precio por kilo
+#       ↓
+#      EDA
 # ============================================================
+
+# Paso 5.1: Crear sesión de Spark conectada a MongoDB Atlas
+
+def iniciar_spark():
+    """
+    Crea una sesión de Spark para leer datos desde MongoDB Atlas.
+    """
+
+    uri_lectura = f"{MONGO_URI.split('?')[0]}/{MONGO_DB}.{MONGO_COLLECTION}?retryWrites=true&w=majority"
+
+    spark = SparkSession.builder \
+        .appName("Semana10_EDA_Mascotas") \
+        .config("spark.mongodb.read.connection.uri", uri_lectura) \
+        .config("spark.jars.packages", "org.mongodb.spark:mongo-spark-connector_2.12:10.1.1") \
+        .getOrCreate()
+
+    print("Sesión Spark creada correctamente.")
+    print("Leyendo desde:", MONGO_DB, ".", MONGO_COLLECTION)
+
+    return spark
+
+
+
+# Paso 5.2: Cargar datos RAW desde MongoDB Atlas
+
+
+def cargar_datos_raw_spark(spark):
+    """
+    Carga los documentos RAW de MongoDB Atlas como DataFrame Spark.
+    """
+
+    df_raw = spark.read.format("mongodb").load()
+
+    print("Datos RAW cargados correctamente desde MongoDB Atlas.")
+    print("Cantidad de registros RAW:", df_raw.count())
+
+    df_raw.printSchema()
+    df_raw.show(5, truncate=False)
+
+    return df_raw
+
+
+# Paso 5.3: Eliminar duplicados e incompletos
+
+def eliminar_duplicados_e_incompletos(df_raw):
+    """
+    Elimina productos duplicados y registros sin campos mínimos.
+    """
+
+    df_clean = df_raw.dropDuplicates(["sku_id", "tienda"])
+
+    df_clean = df_clean.filter(col("nombre_producto").isNotNull())
+    df_clean = df_clean.filter(col("precio_raw").isNotNull())
+    df_clean = df_clean.filter(col("precio_raw") != "")
+
+    print("Limpieza inicial completada.")
+    print("Registros después de eliminar duplicados e incompletos:", df_clean.count())
+
+    return df_clean
+
+
+# Paso 5.4: Normalizar precio
+
+def normalizar_precio(df_clean):
+    """
+    Limpia el campo precio_raw y lo convierte a número decimal.
+    """
+
+    df_clean = df_clean.withColumn(
+        "precio_limpio",
+        regexp_replace(col("precio_raw"), "[^0-9,\\.]", "")
+    )
+
+    df_clean = df_clean.withColumn(
+        "precio_limpio",
+        regexp_replace(col("precio_limpio"), ",", ".")
+    )
+
+    df_clean = df_clean.withColumn(
+        "precio_num",
+        col("precio_limpio").cast("double")
+    )
+
+    df_clean = df_clean.withColumn(
+        "moneda",
+        lit("EUR")
+    )
+
+    print("Normalización de precio completada.")
+
+    df_clean.select("nombre_producto", "precio_raw", "precio_num", "moneda").show(10, truncate=False)
+
+    return df_clean
+
+
+# Paso 5.5: Extraer peso desde formato_raw o texto_crudo
+
+def extraer_peso(df_clean):
+    """
+    Extrae peso desde formato_raw o texto_crudo.
+    Convierte gramos a kilogramos cuando corresponde.
+    """
+
+    df_clean = df_clean.withColumn(
+        "texto_peso",
+        when(col("formato_raw").isNotNull(), col("formato_raw"))
+        .otherwise(col("texto_crudo"))
+    )
+
+    df_clean = df_clean.withColumn(
+        "peso_extraido",
+        regexp_extract(col("texto_peso"), r"(\d+[.,]?\d*)\s*(kg|g|gr)", 1)
+    )
+
+    df_clean = df_clean.withColumn(
+        "unidad_peso",
+        regexp_extract(col("texto_peso"), r"(\d+[.,]?\d*)\s*(kg|g|gr)", 2)
+    )
+
+    df_clean = df_clean.withColumn(
+        "peso_extraido",
+        regexp_replace(col("peso_extraido"), ",", ".").cast("double")
+    )
+
+    df_clean = df_clean.withColumn(
+        "peso_kg",
+        when(col("unidad_peso").isin("g", "gr"), col("peso_extraido") / 1000)
+        .when(col("unidad_peso") == "kg", col("peso_extraido"))
+        .otherwise(None)
+    )
+
+    print("Extracción y normalización de peso completada.")
+
+    df_clean.select("nombre_producto", "formato_raw", "peso_kg", "unidad_peso").show(10, truncate=False)
+
+    return df_clean
+
+
+# Paso 5.6: Calcular precio por kilo
+
+def calcular_precio_por_kilo(df_clean):
+    """
+    Calcula el precio por kilo a partir del precio numérico y el peso normalizado.
+    """
+
+    df_clean = df_clean.withColumn(
+        "precio_kg",
+        when(
+            (col("peso_kg").isNotNull()) & (col("peso_kg") > 0),
+            round(col("precio_num") / col("peso_kg"), 2)
+        ).otherwise(None)
+    )
+
+    print("Cálculo de precio por kilo completado.")
+
+    df_clean.select("nombre_producto", "precio_num", "peso_kg", "precio_kg").show(10, truncate=False)
+
+    return df_clean
+
+
+# Paso 5.7: Normalizar rating y opiniones
+
+def normalizar_rating_opiniones(df_clean):
+    """
+    Asegura que rating y opiniones estén en formato numérico.
+    """
+
+    df_clean = df_clean.withColumn(
+        "rating_num",
+        col("rating").cast("double")
+    )
+
+    df_clean = df_clean.withColumn(
+        "opiniones_num",
+        col("opiniones").cast("int")
+    )
+
+    print("Normalización de rating y opiniones completada.")
+
+    df_clean.select("nombre_producto", "rating", "rating_num", "opiniones", "opiniones_num").show(10, truncate=False)
+
+    return df_clean
+
+
+
+# Paso 5.8: Análisis de valores faltantes
+
+def analizar_valores_faltantes(df_clean):
+    """
+    Muestra cantidad de valores nulos por columna.
+    """
+
+    print("Análisis de valores faltantes:")
+
+    df_clean.select([
+        count(
+            when(
+                col(c).isNull(),
+                c
+            )
+        ).alias(c)
+        for c in df_clean.columns
+    ]).show(truncate=False)
+
+
+# Paso 5.9: EDA básico con Spark
+
+def ejecutar_eda_basico(df_clean):
+    """
+    Ejecuta análisis exploratorio básico sobre productos de mascotas.
+    """
+
+    print("Resumen estadístico de variables numéricas:")
+    df_clean.select(
+        "precio_num",
+        "peso_kg",
+        "precio_kg",
+        "rating_num",
+        "opiniones_num"
+    ).describe().show()
+
+    print("Cantidad de productos por tienda:")
+    df_clean.groupBy("tienda").count().show()
+
+    print("Cantidad de productos por marca:")
+    df_clean.groupBy("marca").count().orderBy(col("count").desc()).show(20)
+
+    print("Precio promedio por marca:")
+    df_clean.groupBy("marca") \
+        .avg("precio_kg") \
+        .orderBy(col("avg(precio_kg)").desc()) \
+        .show(20)
+
+    print("Productos más caros por kilo:")
+    df_clean.select(
+        "nombre_producto",
+        "marca",
+        "precio_num",
+        "peso_kg",
+        "precio_kg",
+        "rating_num",
+        "opiniones_num"
+    ).orderBy(col("precio_kg").desc()).show(20, truncate=False)
+
+
+
+# Paso 5.10: Ejecutar pipeline de limpieza y EDA
+
+def ejecutar_etapa_5():
+    """
+    Ejecuta toda la etapa 5:
+    MongoDB Atlas → Spark → Limpieza → Normalización → EDA.
+    """
+
+    print("Iniciando ETAPA 5: Limpieza, normalización y EDA con Spark")
+
+    spark = iniciar_spark()
+
+    df_raw = cargar_datos_raw_spark(spark)
+
+    df_clean = eliminar_duplicados_e_incompletos(df_raw)
+
+    df_clean = normalizar_precio(df_clean)
+
+    df_clean = extraer_peso(df_clean)
+
+    df_clean = calcular_precio_por_kilo(df_clean)
+
+    df_clean = normalizar_rating_opiniones(df_clean)
+
+    analizar_valores_faltantes(df_clean)
+
+    ejecutar_eda_basico(df_clean)
+
+    print("ETAPA 5 finalizada correctamente.")
+
+    return df_clean
