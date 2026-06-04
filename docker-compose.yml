@@ -1,94 +1,46 @@
-version: "3.8"
-
 services:
-  # Contenedor principal con Jupyter, Spark y entorno visual
   workspace:
-    build: .                      # Construye la imagen usando el Dockerfile local
+    build: .
     container_name: bigdata_workspace
     platform: linux/amd64
-
     ports:
-      - "8888:8888"               # Jupyter Lab
-      - "4040:4040"               # Interfaz web de Spark
-      - "5900:5900"               # Acceso VNC al escritorio
-      - "6080:6080"               # Acceso noVNC desde navegador
-
+      - "8888:8888"
+      - "4040:4040"
+      - "5900:5900"
+      - "6080:6080"
     volumes:
-      - .:/home/jovyan/work       # Monta la carpeta del proyecto dentro del contenedor
-
+      - .:/home/jovyan/work
+      - /etc/resolv.conf:/etc/resolv.conf    
     environment:
-      - JUPYTER_TOKEN=            # Desactiva token de acceso
-      - JUPYTER_PASSWORD=         # Desactiva contraseña
+      - JUPYTER_TOKEN=
+      - JUPYTER_PASSWORD=
       - JUPYTER_ALLOW_INSECURE_WRITES=true
-      - DISPLAY=:0                # Debe coincidir con Xvfb :0
-
-      # --- AGREGADO ---
-      # Fuerza el uso de JupyterLab de forma explícita
+      - DISPLAY=:99
       - JUPYTER_ENABLE_LAB=yes
-
-      # --- OPCIONAL ---
-      # Puedes guardar aquí una cadena Atlas para usarla desde Python si quieres
-      # OJO: también puedes ponerla en un archivo .env para no exponer credenciales
-      # - MONGO_ATLAS_URI=mongodb+srv://usuario:password@cluster0.mongodb.net/?retryWrites=true&w=majority
-
-    shm_size: "2gb"               # Evita fallos del navegador por poca memoria compartida
-
+    shm_size: "2gb"
     depends_on:
       - database
-<<<<<<< HEAD
-
-    # Ahora usamos un script externo para arrancar todo ordenado
-    command: ["/bin/bash", "/home/jovyan/work/start.sh"]
-
-  # Contenedor de base de datos MongoDB
-=======
       - admin-db
-      - admin-db-atlas            # --- AGREGADO --- hace que también espere el visualizador de Atlas
-
-    # --- AGREGADO ---
-    # DNS de Google. Puede ayudar con resolución de nombres,
-    # especialmente si usas conexiones mongodb+srv:// hacia Atlas
+      - admin-db-atlas
     dns:
       - 8.8.8.8
-
-    # --- AGREGADO ---
-    # Reinicia automáticamente si el contenedor falla
+      - 1.1.1.1
     restart: always
-
-    # --- AGREGADO ---
-    # Conectamos este servicio a una red personalizada
     networks:
-      - bigdata_net
+      - BigData_Network_UCN
 
-  # Contenedor de base de datos MongoDB LOCAL
->>>>>>> origin/main
   database:
     image: mongo:latest
     container_name: bigdata_mongodb
     platform: linux/amd64
     ports:
-<<<<<<< HEAD
       - "27017:27017"
-
     volumes:
       - mongo_data:/data/db
-
-  # Interfaz web para visualizar la base de datos en puerto 8081
-=======
-      - "27017:27017"             # Puerto de MongoDB local
-
-    volumes:
-      - mongo_data:/data/db       # Guarda los datos de forma persistente
-
-    # --- AGREGADO ---
     restart: always
-
-    # --- AGREGADO ---
     networks:
-      - bigdata_net
+      - BigData_Network_UCN
 
-  # Interfaz web para visualizar la base de datos LOCAL en puerto 8081
->>>>>>> origin/main
   admin-db:
     image: mongo-express:latest
     container_name: bigdata_ui_local
@@ -97,23 +49,12 @@ services:
       - "8081:8081"
     environment:
       - ME_CONFIG_MONGODB_URL=mongodb://database:27017/
-
-      # --- AGREGADO ---
-      # Habilita funciones administrativas en mongo-express
       - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
-
     depends_on:
       - database
-
-<<<<<<< HEAD
-# Volumen persistente para MongoDB
-=======
-    # --- AGREGADO ---
     networks:
-      - bigdata_net
+      - BigData_Network_UCN
 
-  # --- AGREGADO ---
-  # Interfaz web para visualizar MongoDB Atlas en puerto 8082
   admin-db-atlas:
     image: mongo-express:latest
     container_name: bigdata_ui_atlas
@@ -121,31 +62,16 @@ services:
     ports:
       - "8082:8081"
     environment:
-      # --- IMPORTANTE ---
-      # Reemplaza usuario, password y cluster por tus datos reales de Atlas
-      - ME_CONFIG_MONGODB_URL=mongodb+srv://yhadfeg_db_user:3192Yahima@cluster0.8pbh7yw.mongodb.net/?retryWrites=true&w=majority
-
-      # --- AGREGADO ---
-      # Habilita funciones administrativas en mongo-express
+      - ME_CONFIG_MONGODB_URL=mongodb://nicolegarcia_db_user:Ternurines123@ac-iq19sqr-shard-00-00.uia9vsi.mongodb.net:27017,ac-iq19sqr-shard-00-01.uia9vsi.mongodb.net:27017,ac-iq19sqr-shard-00-02.uia9vsi.mongodb.net:27017/BigData_UCN?ssl=true&replicaSet=atlas-t7etb5-shard-0&authSource=admin&retryWrites=true&w=majority
       - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
-
-      # --- OPCIONAL ---
-      # Solo usar si mongo-express presenta problemas de certificados TLS/SSL con Atlas
-      # No se recomienda dejarlo activo salvo necesidad real
-      # - VC_NODE_TLS_REJECT_UNAUTHORIZED=0
-
-    # --- AGREGADO ---
-    # DNS explícito para mejorar resolución SRV de MongoDB Atlas
+    volumes:
+      - /etc/resolv.conf:/etc/resolv.conf   
     dns:
       - 8.8.8.8
-
-    # --- AGREGADO ---
+      - 1.1.1.1
     networks:
-      - bigdata_net
+      - BigData_Network_UCN
 
-  # --- OPCIONAL / AGREGADO ---
-  # Explorador de archivos del proyecto desde el navegador
-  # Útil si quieres revisar notebooks, scripts y carpetas visualmente
   filebrowser:
     image: filebrowser/filebrowser
     container_name: bigdata_filebrowser
@@ -154,22 +80,20 @@ services:
       - "8083:80"
     volumes:
       - .:/srv
-
-    # --- AGREGADO ---
     networks:
-      - bigdata_net
+      - BigData_Network_UCN
 
-# Volumen persistente para MongoDB LOCAL
->>>>>>> origin/main
 volumes:
   mongo_data:
 
-# --- AGREGADO ---
-# Red personalizada para que todos los servicios se comuniquen de forma más ordenada
 networks:
-  bigdata_net:
+  BigData_Network_UCN:
     driver: bridge
-    name: BigData_Network_UCN
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+
 
 # -------------------------------------------------------------------
 # COSAS QUE PODRÍAS ELIMINAR SI EN ALGÚN MOMENTO USAS SOLO ATLAS
